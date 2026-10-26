@@ -1,0 +1,291 @@
+---
+import { formatDate, getPosts, tagsOf } from '../utils';
+
+const posts = await getPosts();
+const items = [
+	...posts.map((p) => ({
+		kind: 'post',
+		title: p.data.title,
+		sub: `${formatDate(p.data.pubDate)} · ${tagsOf(p).join(' · ')}`,
+		href: `/blog/${p.id}/`,
+		search: `${p.data.title} ${p.data.description} ${tagsOf(p).join(' ')}`.toLowerCase(),
+	})),
+	{ kind: 'page', title: '홈', sub: '/', href: '/', search: 'home 홈' },
+	{ kind: 'page', title: '전체 글', sub: '/blog', href: '/blog/', search: 'blog 글 목록' },
+	{ kind: 'page', title: '태그', sub: '/tags', href: '/tags/', search: 'tags 태그' },
+	{ kind: 'page', title: 'About', sub: '/about', href: '/about/', search: 'about 소개' },
+	{ kind: 'page', title: 'GitHub', sub: 'github.com/sychae2091', href: 'https://github.com/sychae2091', search: 'github 깃허브' },
+];
+---
+
+<div class="palette" id="palette" hidden>
+	<div class="backdrop" data-close></div>
+	<div class="panel" role="dialog" aria-modal="true" aria-label="검색">
+		<div class="input-row">
+			<span class="mono prompt">❯</span>
+			<input id="palette-input" type="text" placeholder="글 제목, 태그, 페이지 검색…" autocomplete="off" spellcheck="false" />
+			<kbd class="mono">esc</kbd>
+		</div>
+		<ul id="palette-list" role="listbox"></ul>
+		<div class="hint mono">
+			<span><kbd>↑</kbd><kbd>↓</kbd> 이동</span>
+			<span><kbd>↵</kbd> 열기</span>
+			<span><kbd>⌘K</kbd> 토글</span>
+		</div>
+	</div>
+	<script is:inline type="application/json" id="palette-data" set:html={JSON.stringify(items).replace(/</g, '\\u003c')} />
+</div>
+
+<script>
+	type Item = { kind: string; title: string; sub: string; href: string; search: string };
+
+	const root = document.getElementById('palette') as HTMLElement;
+	const input = document.getElementById('palette-input') as HTMLInputElement;
+	const list = document.getElementById('palette-list') as HTMLUListElement;
+	const data: Item[] = JSON.parse(document.getElementById('palette-data')?.textContent || '[]');
+	let results: Item[] = data;
+	let index = 0;
+
+	const escapeHtml = (s: string) =>
+		s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
+
+	function render() {
+		if (!results.length) {
+			list.innerHTML = '<li class="empty">검색 결과가 없습니다</li>';
+			return;
+		}
+		list.innerHTML = results
+			.map(
+				(item, i) => `<li role="option" aria-selected="${i === index}" data-i="${i}">
+					<span class="kind ${item.kind}">${item.kind === 'post' ? 'POST' : 'PAGE'}</span>
+					<span class="text"><span class="t">${escapeHtml(item.title)}</span><span class="s">${escapeHtml(item.sub)}</span></span>
+					<span class="go">↵</span>
+				</li>`,
+			)
+			.join('');
+		list.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+	}
+
+	function filter() {
+		const terms = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+		results = terms.length ? data.filter((d) => terms.every((t) => d.search.includes(t))) : data;
+		index = 0;
+		render();
+	}
+
+	function open() {
+		root.hidden = false;
+		document.body.style.overflow = 'hidden';
+		input.value = '';
+		filter();
+		requestAnimationFrame(() => input.focus());
+	}
+
+	function close() {
+		root.hidden = true;
+		document.body.style.overflow = '';
+	}
+
+	function go(item?: Item) {
+		if (!item) return;
+		if (item.href.startsWith('http')) window.open(item.href, '_blank', 'noopener');
+		else window.location.href = item.href;
+	}
+
+	document.addEventListener('keydown', (e) => {
+		const isToggle = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+		const target = e.target as HTMLElement;
+		const typing = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA');
+		if (isToggle || (e.key === '/' && !typing && root.hidden)) {
+			e.preventDefault();
+			root.hidden ? open() : close();
+			return;
+		}
+		if (root.hidden) return;
+		if (e.key === 'Escape') close();
+		else if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			index = Math.min(index + 1, results.length - 1);
+			render();
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			index = Math.max(index - 1, 0);
+			render();
+		} else if (e.key === 'Enter') {
+			e.preventDefault();
+			go(results[index]);
+		}
+	});
+
+	input.addEventListener('input', filter);
+	root.querySelector('[data-close]')?.addEventListener('click', close);
+	list.addEventListener('click', (e) => {
+		const li = (e.target as HTMLElement).closest('li[data-i]') as HTMLElement | null;
+		if (li) go(results[Number(li.dataset.i)]);
+	});
+	list.addEventListener('mousemove', (e) => {
+		const li = (e.target as HTMLElement).closest('li[data-i]') as HTMLElement | null;
+		if (li && Number(li.dataset.i) !== index) {
+			index = Number(li.dataset.i);
+			list.querySelectorAll('li[data-i]').forEach((el) =>
+				el.setAttribute('aria-selected', String(Number((el as HTMLElement).dataset.i) === index)),
+			);
+		}
+	});
+	document.querySelectorAll('[data-open-palette]').forEach((el) => el.addEventListener('click', open));
+</script>
+
+<style>
+	.palette {
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		display: grid;
+		justify-items: center;
+		align-items: start;
+		padding: 12vh 16px 16px;
+	}
+	.palette[hidden] {
+		display: none;
+	}
+	.backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(3, 4, 8, 0.55);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		animation: fade 0.15s ease;
+	}
+	.panel {
+		position: relative;
+		width: 100%;
+		max-width: 620px;
+		background: var(--bg-elev);
+		border: 1px solid var(--border-strong);
+		border-radius: 16px;
+		box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border);
+		overflow: hidden;
+		animation: pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+	}
+	@keyframes fade {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes pop {
+		from {
+			opacity: 0;
+			transform: translateY(-8px) scale(0.98);
+		}
+	}
+	.input-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 0 16px;
+		height: 56px;
+		border-bottom: 1px solid var(--border);
+	}
+	.prompt {
+		color: var(--accent-3);
+		font-weight: 700;
+	}
+	input {
+		flex: 1;
+		height: 100%;
+		border: none;
+		outline: none;
+		background: transparent;
+		color: var(--text);
+		font: inherit;
+		font-size: 16px;
+	}
+	input::placeholder {
+		color: var(--muted);
+	}
+	kbd {
+		font-size: 11px;
+		padding: 2px 6px;
+		border-radius: 5px;
+		border: 1px solid var(--border-strong);
+		background: var(--bg-soft);
+		color: var(--muted);
+	}
+	ul {
+		list-style: none;
+		margin: 0;
+		padding: 8px;
+		max-height: min(56vh, 440px);
+		overflow-y: auto;
+	}
+	ul :global(li) {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 12px;
+		border-radius: 10px;
+		cursor: pointer;
+	}
+	ul :global(li[aria-selected='true']) {
+		background: var(--accent-soft);
+	}
+	ul :global(.empty) {
+		justify-content: center;
+		color: var(--muted);
+		padding: 28px;
+		cursor: default;
+	}
+	ul :global(.kind) {
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		font-weight: 700;
+		padding: 3px 6px;
+		border-radius: 5px;
+		color: var(--accent);
+		border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+	}
+	ul :global(.kind.page) {
+		color: var(--accent-2);
+		border-color: color-mix(in srgb, var(--accent-2) 30%, transparent);
+	}
+	ul :global(.text) {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		flex: 1;
+	}
+	ul :global(.t) {
+		color: var(--text);
+		font-size: 15px;
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	ul :global(.s) {
+		font-family: var(--font-mono);
+		font-size: 12px;
+		color: var(--muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	ul :global(.go) {
+		color: var(--muted);
+		opacity: 0;
+	}
+	ul :global(li[aria-selected='true'] .go) {
+		opacity: 1;
+	}
+	.hint {
+		display: flex;
+		gap: 16px;
+		padding: 10px 16px;
+		border-top: 1px solid var(--border);
+		font-size: 11.5px;
+		color: var(--muted);
+	}
+	.hint kbd {
+		margin-right: 3px;
+	}
+</style>

@@ -1,44 +1,392 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
+import PostRow from '../components/PostRow.astro';
+import Terminal from '../components/Terminal.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import Page from '../layouts/Page.astro';
+import { formatDate, getAllTags, getPosts, tagHref } from '../utils';
+
+const posts = await getPosts();
+const recent = posts.slice(0, 5);
+const trend = posts.find((p) => p.id.startsWith('trend-'));
+const tags = await getAllTags();
+
+const stack = [
+	{ group: 'front', items: ['React', 'TypeScript', 'Vite', 'Vue'] },
+	{ group: 'back', items: ['Java 17', 'Spring Boot', 'MyBatis', 'SQL Server'] },
+	{ group: 'infra', items: ['Linux', 'nginx', 'systemd', 'GitLab CI', 'Gitea Actions'] },
+];
+const envs = ['dev', 'qa', 'live'];
+const metrics = [
+	{ v: '2', k: 'regions' },
+	{ v: '1-click', k: 'deploy & rollback' },
+	{ v: '0', k: 'daemons on prod' },
+];
 ---
 
-<!doctype html>
-<html lang="ko">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>안녕하세요, suyeon입니다 👋</h1>
-			<p>
-				게임 회사에서 운영툴과 사내 웹 서비스를 만드는 웹개발자입니다. 화면과 API를 만드는 데서
-				끝나지 않고, 그 서비스가 올라가는 서버와 배포 파이프라인까지 직접 구축하고 운영하고
-				있습니다.
+<Page title={SITE_TITLE} description={SITE_DESCRIPTION}>
+	<section class="hero container">
+		<div class="copy">
+			<span class="eyebrow"><span class="dot"></span>available · writing weekly</span>
+			<h1>
+				화면부터 서버까지,<br />
+				<span class="grad-text">끝까지 책임지는</span> 웹개발자
+			</h1>
+			<p class="lead">
+				운영툴을 만들고, 그게 올라갈 서버를 세팅하고, 버튼 한 번에 배포되도록 파이프라인을 깝니다. 그
+				과정에서 부딪히고 해결한 것들을 기록합니다.
 			</p>
-			<p>이 블로그에는 실무에서 부딪히고 해결한 것들을 기록합니다.</p>
+			<div class="cta">
+				<a class="btn primary" href="/blog/">글 읽기 →</a>
+				<a class="btn" href="/about/">About</a>
+				<button class="btn ghost mono" type="button" data-open-palette>⌘K 검색</button>
+			</div>
+		</div>
+		<Terminal />
+	</section>
+
+	<section class="bento container">
+		<div class="card cell stat">
+			<span class="label mono">// deploy automation</span>
+			<div class="big"><span class="grad-text">8</span><small>environments</small></div>
+			<p>두 개 리전의 dev · QA · 라이브 환경을 버튼 배포로 전환. 운영 서버엔 데몬 없이 SSH 원격 배포.</p>
+			<div class="metrics">
+				{
+					metrics.map((m) => (
+						<div class="metric">
+							<strong class="mono">{m.v}</strong>
+							<span>{m.k}</span>
+						</div>
+					))
+				}
+			</div>
+			<div class="pipeline mono" aria-hidden="true">
+				<span class="node">build</span>
+				<span class="edge"></span>
+				{
+					envs.map((e, i) => (
+						<>
+							<span class="node ok" style={`--d:${i * 0.5}s`}>
+								✓ {e}
+							</span>
+							{i < envs.length - 1 && <span class="edge" />}
+						</>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="card cell stack">
+			<span class="label mono">// stack</span>
+			<div class="groups">
+				{
+					stack.map((s) => (
+						<div class="group">
+							<span class="g mono">{s.group}</span>
+							<div class="chips">
+								{s.items.map((i) => (
+									<span class="chip">{i}</span>
+								))}
+							</div>
+						</div>
+					))
+				}
+			</div>
+		</div>
+
+		<div class="card cell now">
+			<span class="label mono">// now</span>
 			<ul>
-				<li>
-					<strong>운영툴 개발</strong> — React·TypeScript 화면, Spring Boot·MyBatis API, SQL Server
-					저장 프로시저 설계
-				</li>
-				<li>
-					<strong>배포 자동화</strong> — GitLab CI·Gitea Actions 구축, SSH 원격 배포, 백업과 롤백
-				</li>
-				<li>
-					<strong>서버 구축과 트러블슈팅</strong> — nginx·systemd 구성, 헬스체크, 장애 대응
-				</li>
-				<li>
-					<strong>기술 트렌드</strong> — 웹·인프라 쪽에서 눈여겨볼 만한 변화 정리
-				</li>
+				<li>운영툴 신규 화면 개발</li>
+				<li>배포 파이프라인 다듬기</li>
+				<li>블로그 글 자동화 실험</li>
 			</ul>
-			<p>
-				<a href="/blog">글 목록 보러 가기 →</a>
-			</p>
-		</main>
-		<Footer />
-	</body>
-</html>
+		</div>
+
+		{
+			trend ? (
+				<a class="card cell trend" href={`/blog/${trend.id}/`}>
+					<span class="label mono">// this week</span>
+					<strong>{trend.data.title}</strong>
+					<span class="sub">{trend.data.description}</span>
+					<span class="more mono">{formatDate(trend.data.pubDate)} →</span>
+				</a>
+			) : (
+				<div class="card cell trend">
+					<span class="label mono">// this week</span>
+					<strong>주간 기술 트렌드</strong>
+					<span class="sub">매주 월요일 업데이트</span>
+				</div>
+			)
+		}
+	</section>
+
+	<section class="container recent">
+		<div class="section-head">
+			<h2>최근 글</h2>
+			<a href="/blog/">전체 {posts.length}개 보기 →</a>
+		</div>
+		<div class="list">
+			{recent.map((post) => <PostRow post={post} />)}
+		</div>
+		{
+			tags.length > 0 && (
+				<div class="tagcloud">
+					{tags.map((t) => (
+						<a class="tag" href={tagHref(t.tag)}>
+							#{t.tag} <span class="n">{t.count}</span>
+						</a>
+					))}
+				</div>
+			)
+		}
+	</section>
+</Page>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 56px;
+		align-items: center;
+		padding-top: 88px;
+		padding-bottom: 64px;
+	}
+	h1 {
+		margin-top: 18px;
+		font-size: clamp(36px, 5.2vw, 58px);
+		line-height: 1.16;
+		letter-spacing: -0.045em;
+		font-weight: 800;
+	}
+	.lead {
+		margin: 22px 0 0;
+		max-width: 520px;
+		font-size: 17.5px;
+		color: var(--muted);
+	}
+	.cta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-top: 30px;
+	}
+	.btn.ghost {
+		background: transparent;
+		color: var(--muted);
+		font-weight: 500;
+		font-size: 13.5px;
+		cursor: pointer;
+	}
+	.bento {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		grid-auto-rows: minmax(150px, auto);
+		gap: 14px;
+		padding-bottom: 72px;
+	}
+	.cell {
+		padding: 22px;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		overflow: hidden;
+	}
+	.label {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.stat {
+		grid-column: span 2;
+		grid-row: span 2;
+		background:
+			radial-gradient(600px 220px at 0% 0%, var(--accent-soft), transparent 70%),
+			var(--bg-elev);
+	}
+	.big {
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
+		margin-top: 8px;
+	}
+	.big .grad-text {
+		font-size: 104px;
+		line-height: 0.9;
+		font-weight: 800;
+		letter-spacing: -0.06em;
+	}
+	.big small {
+		font-family: var(--font-mono);
+		font-size: 15px;
+		color: var(--muted);
+	}
+	.stat p {
+		margin: 4px 0 0;
+		color: var(--text-soft);
+		max-width: 440px;
+	}
+	.metrics {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 10px;
+		margin-top: 14px;
+	}
+	.metric {
+		display: grid;
+		gap: 2px;
+		padding: 12px 14px;
+		border-radius: 10px;
+		border: 1px solid var(--border);
+		background: color-mix(in srgb, var(--bg-soft) 60%, transparent);
+	}
+	.metric strong {
+		font-size: 20px;
+		color: var(--text);
+	}
+	.metric span {
+		font-family: var(--font-mono);
+		font-size: 11.5px;
+		color: var(--muted);
+	}
+	.pipeline {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: auto;
+		padding-top: 18px;
+		font-size: 12px;
+	}
+	.node {
+		padding: 6px 10px;
+		border-radius: 8px;
+		border: 1px solid var(--border-strong);
+		color: var(--text-soft);
+		background: var(--bg-soft);
+	}
+	.node.ok {
+		color: var(--accent-3);
+		border-color: color-mix(in srgb, var(--accent-3) 35%, transparent);
+		background: color-mix(in srgb, var(--accent-3) 8%, transparent);
+		animation: lit 3s ease-in-out infinite;
+		animation-delay: var(--d);
+	}
+	@keyframes lit {
+		0%,
+		70%,
+		100% {
+			box-shadow: none;
+		}
+		20% {
+			box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-3) 22%, transparent);
+		}
+	}
+	.edge {
+		width: 22px;
+		height: 1px;
+		background: repeating-linear-gradient(90deg, var(--muted) 0 4px, transparent 4px 7px);
+	}
+	.stack {
+		grid-column: span 2;
+	}
+	.groups {
+		display: grid;
+		gap: 12px;
+	}
+	.group {
+		display: grid;
+		grid-template-columns: 48px 1fr;
+		gap: 12px;
+		align-items: start;
+	}
+	.g {
+		font-size: 12px;
+		color: var(--accent-2);
+		padding-top: 4px;
+	}
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.chip {
+		font-size: 13.5px;
+		padding: 3px 10px;
+		border-radius: 7px;
+		background: var(--bg-soft);
+		border: 1px solid var(--border);
+		color: var(--text-soft);
+	}
+	.now ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		display: grid;
+		gap: 8px;
+		font-size: 14.5px;
+		color: var(--text-soft);
+	}
+	.now li::before {
+		content: '▸ ';
+		color: var(--accent);
+	}
+	.trend strong {
+		font-size: 17px;
+		line-height: 1.4;
+		color: var(--text);
+	}
+	.trend .sub {
+		font-size: 13.5px;
+		line-height: 1.6;
+		color: var(--muted);
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.trend .more {
+		margin-top: auto;
+		font-size: 12px;
+		color: var(--accent);
+	}
+	.recent .list {
+		display: grid;
+		gap: 2px;
+		margin: 0 -20px;
+	}
+	.tagcloud {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 28px;
+	}
+	.tagcloud .n {
+		margin-left: 6px;
+		opacity: 0.6;
+	}
+	@media (max-width: 960px) {
+		.hero {
+			grid-template-columns: 1fr;
+			gap: 40px;
+			padding-top: 56px;
+		}
+		.bento {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+	@media (max-width: 640px) {
+		.bento {
+			grid-template-columns: 1fr;
+		}
+		.stat,
+		.stack {
+			grid-column: auto;
+			grid-row: auto;
+		}
+		.big .grad-text {
+			font-size: 80px;
+		}
+		.recent .list {
+			margin: 0 -14px;
+		}
+	}
+</style>

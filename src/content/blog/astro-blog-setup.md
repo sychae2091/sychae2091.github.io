@@ -2,6 +2,7 @@
 title: '업무용 Node 18은 지키면서 Astro 블로그 띄우기'
 description: 'Windows에서 GitHub Pages + Astro 블로그를 만들며 밟은 함정 네 가지 — Node 버전 충돌, 회사 git 설정, 액션 버전, Pages legacy 모드'
 pubDate: 'Oct 26 2026'
+tags: ['Astro', 'GitHub Pages', 'GitHub Actions', 'Windows']
 ---
 
 개인 기술 블로그를 GitHub Pages + Astro로 만들었다. 설치 명령 자체는 몇 줄인데, 회사 업무용 PC에서 하다 보니 중간에 걸리는 지점이 꽤 있었다. 같은 환경이라면 그대로 겪을 만한 것들이라 정리해 둔다.

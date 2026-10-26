@@ -1,0 +1,68 @@
+---
+import PostRow from '../../components/PostRow.astro';
+import Page from '../../layouts/Page.astro';
+import { getAllTags, getPosts, tagSlug, tagsOf, type Post } from '../../utils';
+
+export async function getStaticPaths() {
+	const posts = await getPosts();
+	const tags = await getAllTags();
+	return tags.map(({ tag }) => ({
+		params: { tag: tagSlug(tag) },
+		props: { tag, posts: posts.filter((p) => tagsOf(p).includes(tag)) },
+	}));
+}
+
+interface Props {
+	tag: string;
+	posts: Post[];
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<Page title={`#${tag}`} description={`#${tag} 태그가 붙은 글 ${posts.length}개`}>
+	<section class="container head">
+		<a class="back mono" href="/tags/">← tags</a>
+		<h1><span class="grad-text">#{tag}</span></h1>
+		<p>{posts.length}개의 글</p>
+	</section>
+	<section class="container">
+		<div class="list">
+			{posts.map((post) => <PostRow post={post} />)}
+		</div>
+	</section>
+</Page>
+
+<style>
+	.head {
+		padding-top: 72px;
+		padding-bottom: 28px;
+	}
+	.back {
+		font-size: 13px;
+		color: var(--muted);
+	}
+	.back:hover {
+		color: var(--accent);
+	}
+	h1 {
+		margin-top: 12px;
+		font-size: 44px;
+		font-weight: 800;
+		letter-spacing: -0.04em;
+	}
+	.head p {
+		margin: 8px 0 0;
+		color: var(--muted);
+	}
+	.list {
+		display: grid;
+		gap: 2px;
+		margin: 0 -20px;
+	}
+	@media (max-width: 720px) {
+		.list {
+			margin: 0 -14px;
+		}
+	}
+</style>

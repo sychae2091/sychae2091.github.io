@@ -1,0 +1,156 @@
+---
+const lines = [
+	{ t: 'cmd', v: 'whoami' },
+	{ t: 'out', v: 'suyeon — web developer @ game studio' },
+	{ t: 'cmd', v: 'cat stack.txt' },
+	{ t: 'out', v: 'React · TypeScript · Spring Boot · SQL Server · nginx' },
+	{ t: 'cmd', v: './deploy.sh --env=live' },
+	{ t: 'ok', v: '✓ build    ✓ verify jar    ✓ backup' },
+	{ t: 'ok', v: '✓ upload   ✓ restart       ✓ health 200' },
+	{ t: 'out', v: 'deployed in 41s 🚀' },
+];
+---
+
+<div class="term card" aria-label="터미널 소개">
+	<div class="chrome">
+		<span class="lights"><i></i><i></i><i></i></span>
+		<span class="title mono">suyeon@blog: ~</span>
+		<span class="spacer"></span>
+	</div>
+	<div class="body mono" id="term-body">{
+		lines.map((l) => (
+			<div class={`line ${l.t}`} data-type={l.t} data-text={l.v}>
+				{l.t === 'cmd' && <span class="ps">❯ </span>}
+				<span class="txt">{l.v}</span>
+			</div>
+		))
+	}<div class="line cmd idle"><span class="ps">❯ </span><span class="cur"></span></div></div>
+</div>
+
+<script>
+	const body = document.getElementById('term-body');
+	const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	if (body && !reduce) {
+		const lines = Array.from(body.querySelectorAll<HTMLElement>('.line:not(.idle)'));
+		const idle = body.querySelector<HTMLElement>('.idle');
+		lines.forEach((l) => (l.style.visibility = 'hidden'));
+		if (idle) idle.style.visibility = 'hidden';
+		const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+		(async () => {
+			await sleep(350);
+			for (const line of lines) {
+				const txt = line.querySelector<HTMLElement>('.txt');
+				const full = line.dataset.text || '';
+				line.style.visibility = 'visible';
+				if (line.dataset.type === 'cmd' && txt) {
+					txt.textContent = '';
+					line.classList.add('typing');
+					for (const ch of full) {
+						txt.textContent += ch;
+						await sleep(38 + Math.random() * 45);
+					}
+					line.classList.remove('typing');
+					await sleep(260);
+				} else {
+					await sleep(line.dataset.type === 'ok' ? 320 : 140);
+				}
+			}
+			if (idle) idle.style.visibility = 'visible';
+		})();
+	}
+</script>
+
+<style>
+	.term {
+		overflow: hidden;
+		background: color-mix(in srgb, var(--code-bg) 92%, transparent);
+		box-shadow:
+			0 30px 80px -30px var(--glow),
+			var(--shadow);
+	}
+	.chrome {
+		display: flex;
+		align-items: center;
+		height: 38px;
+		padding: 0 14px;
+		border-bottom: 1px solid var(--border);
+	}
+	.lights {
+		display: inline-flex;
+		gap: 7px;
+	}
+	.lights i {
+		width: 11px;
+		height: 11px;
+		border-radius: 50%;
+	}
+	.lights i:nth-child(1) {
+		background: #ff5f57;
+	}
+	.lights i:nth-child(2) {
+		background: #febc2e;
+	}
+	.lights i:nth-child(3) {
+		background: #28c840;
+	}
+	.title {
+		flex: 1;
+		text-align: center;
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.spacer {
+		width: 47px;
+	}
+	.body {
+		margin: 0;
+		padding: 18px 20px 22px;
+		min-height: 268px;
+		font-size: 13.5px;
+		line-height: 1.85;
+		color: var(--text-soft);
+	}
+	.txt {
+		white-space: pre-wrap;
+	}
+	.ps {
+		color: var(--accent-3);
+		font-weight: 700;
+	}
+	.cmd .txt {
+		color: var(--text);
+	}
+	.out {
+		color: var(--muted);
+	}
+	.ok {
+		color: var(--accent);
+	}
+	.typing .txt::after,
+	.cur {
+		display: inline-block;
+		width: 8px;
+		height: 1.05em;
+		vertical-align: -0.15em;
+		margin-left: 2px;
+		background: var(--accent);
+	}
+	.typing .txt::after {
+		content: '';
+	}
+	.cur {
+		animation: blink 1.1s steps(1) infinite;
+	}
+	@keyframes blink {
+		50% {
+			opacity: 0;
+		}
+	}
+	@media (max-width: 720px) {
+		.body {
+			font-size: 12px;
+			min-height: 236px;
+			padding: 14px 16px 18px;
+		}
+	}
+</style>

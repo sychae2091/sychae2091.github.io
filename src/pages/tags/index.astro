@@ -1,0 +1,78 @@
+---
+import Page from '../../layouts/Page.astro';
+import { getAllTags, tagHref } from '../../utils';
+
+const tags = await getAllTags();
+const max = Math.max(1, ...tags.map((t) => t.count));
+---
+
+<Page title="Tags" description="주제별로 모아 보기">
+	<section class="container head">
+		<span class="eyebrow mono">$ grep -r "#" ./posts | sort | uniq -c</span>
+		<h1>Tags</h1>
+		<p>주제별로 모아 보기 · {tags.length}개 태그</p>
+	</section>
+	<section class="container grid">
+		{
+			tags.map((t) => (
+				<a class="card item" href={tagHref(t.tag)}>
+					<span class="name mono">#{t.tag}</span>
+					<span class="bar">
+						<i style={`width:${Math.round((t.count / max) * 100)}%`} />
+					</span>
+					<span class="n mono">{t.count} posts</span>
+				</a>
+			))
+		}
+	</section>
+</Page>
+
+<style>
+	.head {
+		padding-top: 72px;
+		padding-bottom: 32px;
+	}
+	h1 {
+		margin-top: 12px;
+		font-size: 44px;
+		font-weight: 800;
+		letter-spacing: -0.04em;
+	}
+	.head p {
+		margin: 8px 0 0;
+		color: var(--muted);
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 12px;
+	}
+	.item {
+		display: grid;
+		gap: 10px;
+		padding: 18px;
+	}
+	.name {
+		font-size: 15px;
+		font-weight: 700;
+		color: var(--text);
+	}
+	.item:hover .name {
+		color: var(--accent);
+	}
+	.bar {
+		height: 4px;
+		border-radius: 4px;
+		background: var(--bg-soft);
+		overflow: hidden;
+	}
+	.bar i {
+		display: block;
+		height: 100%;
+		background: var(--grad);
+	}
+	.n {
+		font-size: 12px;
+		color: var(--muted);
+	}
+</style>

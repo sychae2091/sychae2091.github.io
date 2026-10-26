@@ -1,112 +1,150 @@
 ---
-import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import PostRow from '../../components/PostRow.astro';
+import Page from '../../layouts/Page.astro';
+import { getAllTags, getPosts } from '../../utils';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const posts = await getPosts();
+const tags = await getAllTags();
 ---
 
-<!doctype html>
-<html lang="ko">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{posts.map((post) => (
-						<li>
-							<a href={`/blog/${post.id}/`}>
-								{post.data.heroImage && (
-									<Image width={720} height={360} src={post.data.heroImage} alt="" />
-								)}
-								<h4 class="title">{post.data.title}</h4>
-								<p class="date">
-									<FormattedDate date={post.data.pubDate} />
-								</p>
-							</a>
-						</li>
-					))}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
-</html>
+<Page title="Blog" description="운영툴·배포 자동화·서버 운영을 하며 기록한 글 목록">
+	<section class="container head">
+		<span class="eyebrow mono">$ ls -lt ./posts</span>
+		<h1>Blog</h1>
+		<p>실무에서 부딪히고 해결한 것들, 그리고 매주 정리하는 기술 트렌드.</p>
+		<div class="filter">
+			<div class="search">
+				<span class="mono">❯</span>
+				<input id="post-filter" type="search" placeholder="제목·내용·태그로 필터" autocomplete="off" />
+				<span class="count mono" id="post-count">{posts.length} posts</span>
+			</div>
+			<div class="chips" id="tag-chips">
+				<button type="button" class="tag is-active" data-tag="">#all</button>
+				{tags.map((t) => <button type="button" class="tag" data-tag={t.tag}>#{t.tag}</button>)}
+			</div>
+		</div>
+	</section>
+	<section class="container">
+		<div class="list" id="post-list">
+			{posts.map((post) => <PostRow post={post} />)}
+		</div>
+		<p class="empty" id="post-empty" hidden>조건에 맞는 글이 없습니다.</p>
+	</section>
+</Page>
+
+<script>
+	const input = document.getElementById('post-filter') as HTMLInputElement;
+	const chips = document.getElementById('tag-chips') as HTMLElement;
+	const rows = Array.from(document.querySelectorAll<HTMLElement>('#post-list article'));
+	const count = document.getElementById('post-count') as HTMLElement;
+	const empty = document.getElementById('post-empty') as HTMLElement;
+	let activeTag = '';
+
+	function apply() {
+		const terms = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+		let shown = 0;
+		rows.forEach((row) => {
+			const okText = terms.every((t) => (row.dataset.search || '').includes(t));
+			const okTag = !activeTag || (row.dataset.tags || '').split('|').includes(activeTag);
+			const visible = okText && okTag;
+			row.style.display = visible ? '' : 'none';
+			if (visible) shown++;
+		});
+		count.textContent = `${shown} posts`;
+		empty.hidden = shown > 0;
+	}
+
+	input.addEventListener('input', apply);
+	chips.addEventListener('click', (e) => {
+		const btn = (e.target as HTMLElement).closest('button[data-tag]') as HTMLButtonElement | null;
+		if (!btn) return;
+		activeTag = btn.dataset.tag || '';
+		chips.querySelectorAll('button').forEach((b) => b.classList.toggle('is-active', b === btn));
+		apply();
+	});
+</script>
+
+<style>
+	.head {
+		padding-top: 72px;
+		padding-bottom: 28px;
+	}
+	h1 {
+		margin-top: 12px;
+		font-size: 44px;
+		font-weight: 800;
+		letter-spacing: -0.04em;
+	}
+	.head p {
+		margin: 8px 0 0;
+		color: var(--muted);
+	}
+	.filter {
+		margin-top: 28px;
+		display: grid;
+		gap: 14px;
+	}
+	.search {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		height: 48px;
+		padding: 0 16px;
+		border-radius: 12px;
+		border: 1px solid var(--border-strong);
+		background: var(--bg-elev);
+		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	}
+	.search:focus-within {
+		border-color: var(--accent);
+		box-shadow: 0 0 0 4px var(--accent-soft);
+	}
+	.search > span:first-child {
+		color: var(--accent-3);
+		font-weight: 700;
+	}
+	input {
+		flex: 1;
+		height: 100%;
+		border: none;
+		outline: none;
+		background: transparent;
+		color: var(--text);
+		font: inherit;
+		font-size: 15.5px;
+	}
+	.count {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+	.chips button {
+		cursor: pointer;
+		font-family: var(--font-mono);
+	}
+	.list {
+		display: grid;
+		gap: 2px;
+		margin: 0 -20px;
+	}
+	.empty {
+		color: var(--muted);
+		text-align: center;
+		padding: 40px 0;
+	}
+	@media (max-width: 720px) {
+		.head {
+			padding-top: 48px;
+		}
+		h1 {
+			font-size: 34px;
+		}
+		.list {
+			margin: 0 -14px;
+		}
+	}
+</style>

@@ -1,0 +1,110 @@
+---
+import { formatDate, readingMinutes, tagHref, tagsOf, type Post } from '../utils';
+
+interface Props {
+	post: Post;
+}
+
+const { post } = Astro.props;
+const tags = tagsOf(post);
+---
+
+<article class="row" data-search={`${post.data.title} ${post.data.description} ${tags.join(' ')}`.toLowerCase()} data-tags={tags.join('|')}>
+	<a href={`/blog/${post.id}/`} class="hit" aria-label={post.data.title}></a>
+	<time class="date mono" datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+	<div class="main">
+		<h3>{post.data.title}</h3>
+		<p>{post.data.description}</p>
+		<div class="meta">
+			{tags.map((t) => <a class="tag" href={tagHref(t)}>#{t}</a>)}
+			<span class="read mono">{readingMinutes(post)} min read</span>
+		</div>
+	</div>
+	<span class="arrow" aria-hidden="true">→</span>
+</article>
+
+<style>
+	.row {
+		position: relative;
+		display: grid;
+		grid-template-columns: 108px 1fr 24px;
+		gap: 20px;
+		padding: 22px 20px;
+		border-radius: 14px;
+		border: 1px solid transparent;
+		transition: background-color 0.2s ease, border-color 0.2s ease;
+	}
+	.row:hover {
+		background: var(--bg-elev);
+		border-color: var(--border);
+	}
+	.hit {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		border-radius: inherit;
+	}
+	.date {
+		font-size: 13px;
+		color: var(--muted);
+		padding-top: 4px;
+	}
+	.main {
+		min-width: 0;
+	}
+	h3 {
+		font-size: 19px;
+		line-height: 1.4;
+		transition: color 0.2s ease;
+	}
+	.row:hover h3 {
+		color: var(--accent);
+	}
+	p {
+		margin: 6px 0 12px;
+		font-size: 15px;
+		line-height: 1.65;
+		color: var(--muted);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.meta {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.meta .tag {
+		position: relative;
+		z-index: 1;
+	}
+	.read {
+		font-size: 12px;
+		color: var(--muted);
+		margin-left: 6px;
+	}
+	.arrow {
+		align-self: center;
+		color: var(--muted);
+		opacity: 0;
+		transform: translateX(-6px);
+		transition: all 0.2s ease;
+	}
+	.row:hover .arrow {
+		opacity: 1;
+		transform: none;
+		color: var(--accent);
+	}
+	@media (max-width: 720px) {
+		.row {
+			grid-template-columns: 1fr;
+			gap: 6px;
+			padding: 18px 14px;
+		}
+		.arrow {
+			display: none;
+		}
+	}
+</style>
