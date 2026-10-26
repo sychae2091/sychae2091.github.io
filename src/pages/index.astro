@@ -6,52 +6,37 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
+			<h1>안녕하세요, suyeon입니다 👋</h1>
 			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to
-				build a personal website, blog, or portfolio with Astro.
+				게임 회사에서 운영툴과 사내 웹 서비스를 만드는 웹개발자입니다. 화면과 API를 만드는 데서
+				끝나지 않고, 그 서비스가 올라가는 서버와 배포 파이프라인까지 직접 구축하고 운영하고
+				있습니다.
 			</p>
-			<p>
-				This template comes with a few integrations already configured in your{' '}
-				<code>astro.config.mjs</code> file. You can customize your setup with{' '}
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like
-				Tailwind, React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
+			<p>이 블로그에는 실무에서 부딪히고 해결한 것들을 기록합니다.</p>
 			<ul>
 				<li>
-					Edit this page in <code>src/pages/index.astro</code>
+					<strong>운영툴 개발</strong> — React·TypeScript 화면, Spring Boot·MyBatis API, SQL Server
+					저장 프로시저 설계
 				</li>
 				<li>
-					Edit the site header items in <code>src/components/Header.astro</code>
+					<strong>배포 자동화</strong> — GitLab CI·Gitea Actions 구축, SSH 원격 배포, 백업과 롤백
 				</li>
 				<li>
-					Add your name to the footer in <code>src/components/Footer.astro</code>
+					<strong>서버 구축과 트러블슈팅</strong> — nginx·systemd 구성, 헬스체크, 장애 대응
 				</li>
 				<li>
-					Check out the included blog posts in <code>src/content/blog/</code>
-				</li>
-				<li>
-					Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code>
+					<strong>기술 트렌드</strong> — 웹·인프라 쪽에서 눈여겨볼 만한 변화 정리
 				</li>
 			</ul>
 			<p>
-				Have fun! If you get stuck, remember to{' '}
-				<a href="https://docs.astro.build/">read the docs</a> or{' '}
-				<a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out{' '}
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a> by{' '}
-				<a href="https://twitter.com/Charca">Maxi Ferreira</a>.
+				<a href="/blog">글 목록 보러 가기 →</a>
 			</p>
 		</main>
 		<Footer />
