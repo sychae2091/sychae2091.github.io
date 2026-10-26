@@ -2,7 +2,7 @@
 // You can import this data from anywhere in your site by using the `import` keyword.
 
 export const SITE_TITLE = 'suyeon.log';
-export const SITE_DESCRIPTION = '운영툴과 배포 자동화를 만들며 배운 것들을 기록하는 웹개발자 블로그';
+export const SITE_DESCRIPTION = '?�영?�과 배포 ?�동?��? 만들�?배운 것들??기록?�는 ?�개발자 블로�?;
 
 export const MONETIZATION = {
 	adsense: {
@@ -20,4 +20,8 @@ export const MONETIZATION = {
 		tossMe: '',
 		kakaoPay: '',
 	},
+};
+
+export const ANALYTICS = {
+	goatcounter: 'suyeon',
 };
