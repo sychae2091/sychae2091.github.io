@@ -1,0 +1,14 @@
+---
+import { MONETIZATION } from '../consts';
+
+const { publisher } = MONETIZATION.ethicalAds;
+---
+
+{
+	publisher && (
+		<>
+			<div class="ea mono" data-ea-publisher={publisher} data-ea-type="text" data-ea-style="fixedfooter" />
+			<script is:inline async src="https://media.ethicalads.io/media/client/ethicalads.min.js" />
+		</>
+	)
+}

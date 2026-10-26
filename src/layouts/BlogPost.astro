@@ -1,5 +1,8 @@
 ---
 import type { MarkdownHeading } from 'astro';
+import AdSlot from '../components/AdSlot.astro';
+import SupportCard from '../components/SupportCard.astro';
+import { MONETIZATION } from '../consts';
 import { formatDate, readingMinutes, tagHref, tagsOf, type Post } from '../utils';
 import Page from './Page.astro';
 
@@ -11,7 +14,8 @@ interface Props {
 }
 
 const { post, headings, newer, older } = Astro.props;
-const { title, description, pubDate, updatedDate } = post.data;
+const { title, description, pubDate, updatedDate, disclosure } = post.data;
+const ads = MONETIZATION.adsense;
 const tags = tagsOf(post);
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 ---
@@ -22,6 +26,7 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 	<article class="container post">
 		<header class="post-head">
 			<a class="back mono" href="/blog/">← cd ../blog</a>
+			{disclosure && <p class="disclosure">{disclosure}</p>}
 			<div class="tags">
 				{tags.map((t) => <a class="tag" href={tagHref(t)}>#{t}</a>)}
 			</div>
@@ -47,23 +52,33 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 				<slot />
 			</div>
 			{
-				toc.length > 1 && (
+				(toc.length > 1 || ads.slotSidebar) && (
 					<aside class="toc">
-						<div class="toc-inner">
-							<span class="toc-title mono">// on this page</span>
-							<ul>
-								{toc.map((h) => (
-									<li class={`d${h.depth}`}>
-										<a href={`#${h.slug}`} data-slug={h.slug}>
-											{h.text}
-										</a>
-									</li>
-								))}
-							</ul>
+						{toc.length > 1 && (
+							<div class="toc-inner">
+								<span class="toc-title mono">// on this page</span>
+								<ul>
+									{toc.map((h) => (
+										<li class={`d${h.depth}`}>
+											<a href={`#${h.slug}`} data-slug={h.slug}>
+												{h.text}
+											</a>
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
+						<div class="side-ad">
+							<AdSlot slot={ads.slotSidebar} format="vertical" />
 						</div>
 					</aside>
 				)
 			}
+		</div>
+
+		<div class="after">
+			<SupportCard />
+			<AdSlot slot={ads.slotPostBottom} />
 		</div>
 
 		<nav class="pager">
@@ -251,12 +266,40 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 	.toc a.active {
 		color: var(--accent);
 	}
+	.disclosure {
+		margin: 24px 0 0;
+		padding: 10px 14px;
+		border-radius: 10px;
+		font-size: 14px;
+		font-weight: 600;
+		color: #b45309;
+		background: rgba(245, 158, 11, 0.12);
+		border: 1px solid rgba(245, 158, 11, 0.35);
+	}
+	:global(:root[data-theme='dark']) .disclosure {
+		color: #fbbf24;
+	}
+	.side-ad {
+		margin-top: 28px;
+	}
+	.side-ad:empty {
+		display: none;
+	}
+	.after {
+		display: grid;
+		gap: 16px;
+		max-width: 760px;
+		margin-top: 72px;
+	}
+	.after:empty {
+		display: none;
+	}
 	.pager {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 14px;
 		max-width: 760px;
-		margin-top: 80px;
+		margin-top: 32px;
 	}
 	.pg {
 		display: grid;

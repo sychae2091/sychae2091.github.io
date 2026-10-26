@@ -1,0 +1,49 @@
+---
+import { MONETIZATION } from '../consts';
+
+interface Props {
+	slot: string;
+	format?: 'auto' | 'fluid' | 'rectangle' | 'vertical';
+}
+
+const { slot, format = 'auto' } = Astro.props;
+const { client } = MONETIZATION.adsense;
+const enabled = Boolean(client && slot);
+---
+
+{
+	enabled && (
+		<aside class="ad" aria-label="광고">
+			<span class="ad-label mono">AD</span>
+			<ins
+				class="adsbygoogle"
+				style="display:block"
+				data-ad-client={client}
+				data-ad-slot={slot}
+				data-ad-format={format}
+				data-full-width-responsive="true"
+			/>
+			<script is:inline>
+				(window.adsbygoogle = window.adsbygoogle || []).push({});
+			</script>
+		</aside>
+	)
+}
+
+<style>
+	.ad {
+		position: relative;
+		padding: 22px 14px 14px;
+		border: 1px dashed var(--border-strong);
+		border-radius: 12px;
+		min-height: 120px;
+	}
+	.ad-label {
+		position: absolute;
+		top: 6px;
+		left: 12px;
+		font-size: 10px;
+		letter-spacing: 0.12em;
+		color: var(--muted);
+	}
+</style>
