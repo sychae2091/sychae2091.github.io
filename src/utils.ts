@@ -16,7 +16,7 @@ export function readingMinutes(post: Post): number {
 }
 
 export async function getPosts(): Promise<Post[]> {
-	return (await getCollection('blog')).sort(
+	return (await getCollection('blog', (p) => !import.meta.env.PROD || !p.data.draft)).sort(
 		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 	);
 }

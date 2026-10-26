@@ -13,7 +13,7 @@ const tags = tagsOf(post);
 	<a href={`/blog/${post.id}/`} class="hit" aria-label={post.data.title}></a>
 	<time class="date mono" datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
 	<div class="main">
-		<h3>{post.data.title}</h3>
+		<h3>{post.data.draft && <span class="draft mono">DRAFT</span>}{post.data.title}</h3>
 		<p>{post.data.description}</p>
 		<div class="meta">
 			{tags.map((t) => <a class="tag" href={tagHref(t)}>#{t}</a>)}
@@ -51,6 +51,17 @@ const tags = tagsOf(post);
 	}
 	.main {
 		min-width: 0;
+	}
+	.draft {
+		display: inline-block;
+		margin-right: 8px;
+		padding: 2px 7px;
+		border-radius: 6px;
+		font-size: 11px;
+		vertical-align: 3px;
+		color: #b45309;
+		background: rgba(245, 158, 11, 0.14);
+		border: 1px solid rgba(245, 158, 11, 0.4);
 	}
 	h3 {
 		font-size: 19px;
