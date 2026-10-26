@@ -25,3 +25,9 @@ export const MONETIZATION = {
 export const ANALYTICS = {
 	goatcounter: 'suyeon',
 };
+
+export const SEO = {
+	googleVerification: '',
+	naverVerification: '',
+	bingVerification: '',
+};

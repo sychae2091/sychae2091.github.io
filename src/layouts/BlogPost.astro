@@ -3,7 +3,7 @@ import type { MarkdownHeading } from 'astro';
 import AdSlot from '../components/AdSlot.astro';
 import SupportCard from '../components/SupportCard.astro';
 import { MONETIZATION } from '../consts';
-import { formatDate, readingMinutes, tagHref, tagsOf, type Post } from '../utils';
+import { formatDate, getPosts, readingMinutes, tagHref, tagsOf, type Post } from '../utils';
 import Page from './Page.astro';
 
 interface Props {
@@ -18,9 +18,33 @@ const { title, description, pubDate, updatedDate, disclosure } = post.data;
 const ads = MONETIZATION.adsense;
 const tags = tagsOf(post);
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+
+const related = (await getPosts())
+	.filter((p) => p.id !== post.id)
+	.map((p) => ({ p, score: tagsOf(p).filter((t) => tags.includes(t)).length }))
+	.filter((r) => r.score > 0)
+	.sort((a, b) => b.score - a.score || b.p.data.pubDate.valueOf() - a.p.data.pubDate.valueOf())
+	.slice(0, 3)
+	.map((r) => r.p);
+
+const site = Astro.site ?? new URL('https://sychae2091.github.io');
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'BlogPosting',
+	headline: title,
+	description,
+	datePublished: pubDate.toISOString(),
+	dateModified: (updatedDate ?? pubDate).toISOString(),
+	keywords: tags.join(', '),
+	inLanguage: 'ko-KR',
+	mainEntityOfPage: new URL(`/blog/${post.id}/`, site).href,
+	author: { '@type': 'Person', name: 'suyeon', url: new URL('/about/', site).href },
+	publisher: { '@type': 'Person', name: 'suyeon' },
+};
 ---
 
 <Page title={title} description={description} type="article">
+	<script is:inline type="application/ld+json" slot="head" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
 	<div class="progress" slot="top" aria-hidden="true"><i id="read-progress"></i></div>
 
 	<article class="container post">
@@ -77,6 +101,21 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 		</div>
 
 		<div class="after">
+			{
+				related.length > 0 && (
+					<section class="related">
+						<span class="mono related-title">// related posts</span>
+						<div class="related-grid">
+							{related.map((r) => (
+								<a class="card rel" href={`/blog/${r.id}/`}>
+									<span class="mono">{formatDate(r.data.pubDate)}</span>
+									<strong>{r.data.title}</strong>
+								</a>
+							))}
+						</div>
+					</section>
+				)
+			}
 			<SupportCard />
 			<AdSlot slot={ads.slotPostBottom} />
 		</div>
@@ -290,6 +329,36 @@ const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 		gap: 16px;
 		max-width: 760px;
 		margin-top: 72px;
+	}
+	.related-title {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.related-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 12px;
+		margin-top: 12px;
+	}
+	.rel {
+		display: grid;
+		align-content: start;
+		gap: 6px;
+		padding: 16px 18px;
+	}
+	.rel span {
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.rel strong {
+		font-size: 14.5px;
+		line-height: 1.45;
+		color: var(--text);
+	}
+	@media (max-width: 720px) {
+		.related-grid {
+			grid-template-columns: 1fr;
+		}
 	}
 	.after:empty {
 		display: none;
