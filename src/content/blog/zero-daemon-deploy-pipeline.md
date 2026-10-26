@@ -1,9 +1,9 @@
 ---
 title: '운영 서버엔 데몬을 두지 않는다 — 8개 환경 버튼 배포 구축기'
 description: 'Jenkins도 러너도 없던 상태에서 두 리전, dev·QA·라이브 8개 환경을 버튼 배포로 바꾼 과정과 구조, 그리고 사고에서 배운 것들'
-pubDate: 'Oct 26 2026'
+pubDate: 'Oct 29 2026'
 tags: ['배포 자동화', 'GitLab CI', 'Gitea Actions', 'SSH']
-draft: true
+draft: false
 ---
 
 처음 상태는 단순했다. Jenkins 없음, GitLab 러너 0대. 배포는 장비에 들어가서 jar를 올리고 손으로 재시작하는 방식이었다. 서비스는 백엔드 10여 종에 프론트까지, 환경은 두 리전에 걸쳐 dev·QA·라이브. 이걸 전부 "버튼 하나"로 바꾸는 게 목표였다.

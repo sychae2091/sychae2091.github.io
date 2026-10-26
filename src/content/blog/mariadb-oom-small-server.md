@@ -1,9 +1,9 @@
 ---
 title: '램 3.7GB 서버의 메모리 알람 — 버퍼 풀을 줄여도 메모리가 안 돌아온 이유'
 description: 'DB와 Java 앱이 한 서버에 동거하다 터진 메모리 알람. OOM 이력 추적, 버퍼 풀 온라인 축소, 그리고 결국 재시작이 필요했던 이유'
-pubDate: 'Oct 26 2026'
+pubDate: 'Nov 12 2026'
 tags: ['MariaDB', 'Linux', '트러블슈팅']
-draft: true
+draft: false
 ---
 
 배포 직후 7분 만에 메모리 알람이 울렸다. 서비스는 정상 동작 중이었지만, 숫자를 보니 아슬아슬했다.

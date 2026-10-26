@@ -1,9 +1,9 @@
 ---
 title: '서비스를 종료할 때 API를 바로 지우지 않는 이유 — 플래그로 DB부터 끊기'
 description: '서비스 종료 작업에서 앱은 살려 두고 설정 플래그로 DB 접근만 차단한 방식. GET은 빈 데이터, POST는 종료 코드'
-pubDate: 'Oct 26 2026'
+pubDate: 'Dec 10 2026'
 tags: ['Spring Boot', '운영']
-draft: true
+draft: false
 ---
 
 서비스 종료가 결정됐다. 웹사이트를 닫고, 그 뒤에 있던 API가 DB에서 데이터를 가져오던 걸 끊어야 했다. 가장 깔끔해 보이는 방법은 **API 서버를 내리는 것**이다. 하지만 그렇게 하지 않았다.

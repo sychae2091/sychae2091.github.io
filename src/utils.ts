@@ -15,8 +15,20 @@ export function readingMinutes(post: Post): number {
 	return Math.max(1, Math.round(hangul / 500 + words / 220));
 }
 
+const KST_OFFSET = 9 * 60 * 60 * 1000;
+const DAY = 24 * 60 * 60 * 1000;
+
+export function isScheduled(post: Post): boolean {
+	const endOfTodayKst = Math.floor((Date.now() + KST_OFFSET) / DAY + 1) * DAY - KST_OFFSET;
+	return post.data.pubDate.valueOf() >= endOfTodayKst;
+}
+
+export function isPublished(post: Post): boolean {
+	return !post.data.draft && !isScheduled(post);
+}
+
 export async function getPosts(): Promise<Post[]> {
-	return (await getCollection('blog', (p) => !import.meta.env.PROD || !p.data.draft)).sort(
+	return (await getCollection('blog', (p) => !import.meta.env.PROD || isPublished(p))).sort(
 		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 	);
 }

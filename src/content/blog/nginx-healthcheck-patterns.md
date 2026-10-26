@@ -1,9 +1,9 @@
 ---
 title: 'nginx 헬스체크 3가지 — "장비가 살았나"와 "API가 살았나"는 다른 질문이다'
 description: '로드밸런서 헬스체크를 nginx 직접 응답, API 응답, nginx 프록시 중 무엇으로 할지 고르는 기준과 nginx 세팅 때 자주 밟는 함정'
-pubDate: 'Oct 26 2026'
+pubDate: 'Nov 26 2026'
 tags: ['nginx', 'Linux', 'Spring Boot']
-draft: true
+draft: false
 ---
 
 로드밸런서에 헬스체크 경로를 등록할 때마다 같은 고민을 했다. `/health`가 200을 주면 "건강하다"는 건데, **무엇이** 건강하다는 걸까. 운영하면서 정리한 세 가지 방식이다.

@@ -1,9 +1,9 @@
 ---
 title: 'Spring Boot jar를 systemd로 띄우는 표준형 — .service와 .conf 두 파일 세트'
 description: 'jar 교체와 설정 변경을 분리하는 EnvironmentFile 패턴, 시스템 PATH에 기대지 않는 Java, 그리고 "설정 말고 실제를 보는" 검증 습관'
-pubDate: 'Oct 26 2026'
+pubDate: 'Dec 03 2026'
 tags: ['systemd', 'Linux', 'Spring Boot', 'Java']
-draft: true
+draft: false
 ---
 
 장비를 새로 세팅할 때마다 서비스 등록 방식이 조금씩 달라지는 게 싫어서 표준형을 하나 정했다. 핵심은 **앱마다 파일 두 개**다.

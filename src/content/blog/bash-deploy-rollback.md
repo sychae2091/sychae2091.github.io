@@ -1,9 +1,9 @@
 ---
 title: 'CI 전에 만든 안전망 — bash deploy / rollback 함수'
 description: '버튼 배포가 생기기 전, 그리고 생긴 뒤에도 비상구로 쓰는 수동 배포·롤백 함수. 백업 이름 규칙부터 35초의 의미까지'
-pubDate: 'Oct 26 2026'
+pubDate: 'Nov 05 2026'
 tags: ['Linux', 'Bash', '배포 자동화']
-draft: true
+draft: false
 ---
 
 CI 버튼 배포를 깔기 전에 먼저 한 일은, 장비마다 **`deploy`와 `rollback` 함수**를 심는 것이었다. 손 배포를 하더라도 순서가 매번 같아야 사고가 안 나기 때문이다. CI가 다 깔린 지금도 이 함수들은 지우지 않았다. 빌드 서버가 죽었을 때의 비상구이자, 가장 빠른 롤백 경로다.
